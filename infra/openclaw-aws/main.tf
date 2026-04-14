@@ -302,7 +302,7 @@ resource "aws_ecs_service" "this" {
   enable_execute_command = true
 
   network_configuration {
-    assign_public_ip = false
+    assign_public_ip = true
     security_groups  = [aws_security_group.ecs_service.id]
     subnets          = var.private_subnet_ids
   }

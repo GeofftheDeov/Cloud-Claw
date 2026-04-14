@@ -5,7 +5,7 @@ Terraform scaffold for running OpenClaw on AWS with:
 - ECS Fargate
 - EFS
 - CloudWatch Logs
-- private subnet deployment
+- VPC deployment (private subnets preferred; default/public subnet bootstrap supported)
 
 ## Defaults
 

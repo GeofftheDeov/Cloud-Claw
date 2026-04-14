@@ -1,6 +1,6 @@
 # Cloud-Claw
 
-Infrastructure scaffold for running OpenClaw privately on AWS ECS Fargate with EFS-backed persistent storage.
+Infrastructure scaffold for running OpenClaw on AWS ECS Fargate with EFS-backed persistent storage.
 
 ## Included
 
