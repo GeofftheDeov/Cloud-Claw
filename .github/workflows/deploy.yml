@@ -1,0 +1,84 @@
+name: Build and Deploy Cloud-Claw
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'infra/openclaw-aws/**'
+      - '.github/workflows/deploy.yml'
+      - 'Dockerfile'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'src/**'
+      - 'scripts/**'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-2
+  ECR_REPOSITORY: cloud-claw
+  TF_WORKING_DIR: infra/openclaw-aws
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init
+
+      - name: Terraform apply
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: |
+          terraform apply -auto-approve \
+            -var="aws_region=${AWS_REGION}" \
+            -var="vpc_id=${{ secrets.VPC_ID }}" \
+            -var='private_subnet_ids=${{ secrets.PRIVATE_SUBNET_IDS_JSON }}' \
+            -var='allowed_cidr_blocks=${{ secrets.ALLOWED_CIDR_BLOCKS_JSON }}' \
+            -var="gateway_token_secret_arn=${{ secrets.OPENCLAW_GATEWAY_TOKEN_SECRET_ARN }}" \
+            -var="discord_token_secret_arn=${{ secrets.DISCORD_TOKEN_SECRET_ARN }}" \
+            -var="openai_api_key_secret_arn=${{ secrets.OPENAI_API_KEY_SECRET_ARN }}" \
+            -var="gemini_api_key_secret_arn=${{ secrets.GEMINI_API_KEY_SECRET_ARN }}"
+
+      - name: Fetch ECR repository URL
+        id: tfout
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: echo "repository_url=$(terraform output -raw ecr_repository_url)" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        env:
+          REPOSITORY_URL: ${{ steps.tfout.outputs.repository_url }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t "$REPOSITORY_URL:$IMAGE_TAG" -f Dockerfile .
+          docker push "$REPOSITORY_URL:$IMAGE_TAG"
+          docker tag "$REPOSITORY_URL:$IMAGE_TAG" "$REPOSITORY_URL:latest"
+          docker push "$REPOSITORY_URL:latest"
+
+      - name: Force new ECS deployment
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: |
+          CLUSTER_NAME=$(terraform output -raw ecs_cluster_name)
+          SERVICE_NAME=$(terraform output -raw ecs_service_name)
+          aws ecs update-service --cluster "$CLUSTER_NAME" --service "$SERVICE_NAME" --force-new-deployment

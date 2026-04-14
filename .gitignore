@@ -1,0 +1,9 @@
+# Terraform
+infra/openclaw-aws/.terraform/
+infra/openclaw-aws/.terraform.lock.hcl
+infra/openclaw-aws/*.tfstate
+infra/openclaw-aws/*.tfstate.*
+infra/openclaw-aws/*.tfvars
+
+# Local OpenClaw state
+.openclaw/

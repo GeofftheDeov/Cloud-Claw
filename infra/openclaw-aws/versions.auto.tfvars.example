@@ -1,0 +1,14 @@
+aws_region         = "us-east-2"
+environment_name   = "prod"
+name_prefix        = "cloud-claw"
+vpc_id             = "vpc-xxxxxxxx"
+private_subnet_ids = ["subnet-aaaaaaa", "subnet-bbbbbbb"]
+allowed_cidr_blocks = [
+  "10.0.0.0/16"
+]
+image_tag = "latest"
+
+gateway_token_secret_arn  = "arn:aws:secretsmanager:us-east-2:123456789012:secret:cloud-claw/prod/openclaw-gateway-token"
+discord_token_secret_arn  = "arn:aws:secretsmanager:us-east-2:123456789012:secret:cloud-claw/prod/discord-token"
+openai_api_key_secret_arn = "arn:aws:secretsmanager:us-east-2:123456789012:secret:cloud-claw/prod/openai-api-key"
+# gemini_api_key_secret_arn = "arn:aws:secretsmanager:us-east-2:123456789012:secret:cloud-claw/prod/gemini-api-key"
