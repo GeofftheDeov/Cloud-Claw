@@ -47,16 +47,16 @@ jobs:
 
       - name: Terraform apply
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: |
-          terraform apply -auto-approve \
-            -var="aws_region=${AWS_REGION}" \
-            -var="vpc_id=${{ secrets.VPC_ID }}" \
-            -var='private_subnet_ids=${{ secrets.PRIVATE_SUBNET_IDS_JSON }}' \
-            -var='allowed_cidr_blocks=${{ secrets.ALLOWED_CIDR_BLOCKS_JSON }}' \
-            -var="gateway_token_secret_arn=${{ secrets.OPENCLAW_GATEWAY_TOKEN_SECRET_ARN }}" \
-            -var="discord_token_secret_arn=${{ secrets.DISCORD_TOKEN_SECRET_ARN }}" \
-            -var="openai_api_key_secret_arn=${{ secrets.OPENAI_API_KEY_SECRET_ARN }}" \
-            -var="gemini_api_key_secret_arn=${{ secrets.GEMINI_API_KEY_SECRET_ARN }}"
+        env:
+          TF_VAR_aws_region: ${{ env.AWS_REGION }}
+          TF_VAR_vpc_id: ${{ secrets.VPC_ID }}
+          TF_VAR_private_subnet_ids: ${{ secrets.PRIVATE_SUBNET_IDS_JSON }}
+          TF_VAR_allowed_cidr_blocks: ${{ secrets.ALLOWED_CIDR_BLOCKS_JSON }}
+          TF_VAR_gateway_token_secret_arn: ${{ secrets.OPENCLAW_GATEWAY_TOKEN_SECRET_ARN }}
+          TF_VAR_discord_token_secret_arn: ${{ secrets.DISCORD_TOKEN_SECRET_ARN }}
+          TF_VAR_openai_api_key_secret_arn: ${{ secrets.OPENAI_API_KEY_SECRET_ARN }}
+          TF_VAR_gemini_api_key_secret_arn: ${{ secrets.GEMINI_API_KEY_SECRET_ARN }}
+        run: terraform apply -auto-approve
 
       - name: Fetch ECR repository URL
         id: tfout
