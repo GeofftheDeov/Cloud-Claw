@@ -6,7 +6,7 @@ export const SYSTEM_PROMPT =
   'You can check account details, inspect open positions, look up stock quotes, and submit market orders. ' +
   'Be concise and factual. Always confirm trade details before executing.';
 
-export const MODEL = 'claude-3-5-sonnet-20241022';
+export const MODEL = 'claude-sonnet-4-6';
 
 export const tools: Anthropic.Tool[] = [
   {
